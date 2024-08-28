@@ -7,8 +7,8 @@ class Task(Base):
     __tablename__ = 'tasks'
 
     id = Column(Integer, primary_key=True, index=True)
+    key = Column(String)
     name = Column(String)
-    status = Column(String)
     estimated_duration = Column(Integer)
     start_timestamp = Column(Integer, nullable=True)
     consume_timestamp = Column(Integer)
@@ -19,6 +19,7 @@ class Column_(Base):
     __tablename__ = 'columns'
 
     id = Column(Integer, primary_key=True, index=True)
+    key = Column(String)
     task_order = Column(Text)
 
     @validates('task_order')
