@@ -1,5 +1,6 @@
 from typing import Annotated, List, Optional
 from fastapi import Depends, FastAPI, HTTPException, Path, status
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 import models
@@ -7,6 +8,14 @@ from models import Column_, ColumnOrder, Task
 from database import SessionLocal, engine
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -21,7 +30,6 @@ db_dependency = Annotated[Session, Depends(get_db)]
 
 class TaskRequest(BaseModel):
     name: str
-    status: str
     estimated_duration: int
     start_timestamp: Optional[int] = None
     consume_timestamp: Optional[int] = 0
@@ -66,6 +74,9 @@ async def create_task(db: db_dependency, task_request: TaskRequest):
     task = Task(**task_request.model_dump())
     db.add(task)
     db.commit()
+    # return id of new task
+    return {"id": task.id}
+
 
 @app.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_task(db: db_dependency, task_id: int = Path(gt=0)):
@@ -78,6 +89,13 @@ async def delete_task(db: db_dependency, task_id: int = Path(gt=0)):
 @app.get("/columns")
 async def read_columns(db: db_dependency):
     return db.query(Column_).all()
+
+@app.get("/columns/{column_id}")
+async def read_column(db: db_dependency, column_id: int = Path(gt=0)):
+    column = db.query(Column_).filter(Column_.id == column_id).first()
+    if column is None:
+        raise HTTPException(status_code=404, detail="Column not found")
+    return column
     
 @app.post("/columns", status_code=status.HTTP_201_CREATED)
 async def create_column(db: db_dependency, column_request: ColumnRequest):
