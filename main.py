@@ -39,6 +39,7 @@ def get_db():
 db_dependency = Annotated[Session, Depends(get_db)]
 
 class TaskRequest(BaseModel):
+    key: str
     name: str
     estimated_duration: int
     start_timestamp: Optional[int] = None
@@ -47,14 +48,22 @@ class TaskRequest(BaseModel):
 
 
 class ColumnRequest(BaseModel):
-    task_order: List[int]
+    key: str
+    task_order: str
 
 class ColumnOrderRequest(BaseModel):
-    column_order: List[int]
+    column_order: List[str]
 
 @app.get("/tasks")
 async def read_tasks(db: db_dependency):
     return db.query(Task).all()
+
+@app.get("/tasks/key/{key}")
+async def read_tasks_by_key(db: db_dependency, key: str):
+    task = db.query(Task).filter(Task.key == key).first()
+    if task is None:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return task
 
 @app.get("/tasks/{task_id}")
 async def read_task(db: db_dependency, task_id: int = Path(gt=0)):
@@ -70,8 +79,8 @@ async def update_task(db: db_dependency,
     task = db.query(Task).filter(Task.id == task_id).first()
     if task is None:
         raise HTTPException(status_code=404, detail="Task not found")
+    task.key = task_request.key
     task.name = task_request.name
-    task.status = task_request.status
     task.estimated_duration = task_request.estimated_duration
     task.start_timestamp = task_request.start_timestamp
     task.consume_timestamp = task_request.consume_timestamp
@@ -100,6 +109,13 @@ async def delete_task(db: db_dependency, task_id: int = Path(gt=0)):
 async def read_columns(db: db_dependency):
     return db.query(Column_).all()
 
+@app.get("/columns/key/{key}")
+async def read_columns_by_key(db: db_dependency, key: str):
+    column = db.query(Column_).filter(Column_.key == key).first()
+    if column is None:
+        raise HTTPException(status_code=404, detail="Column not found")
+    return column
+
 @app.get("/columns/{column_id}")
 async def read_column(db: db_dependency, column_id: int = Path(gt=0)):
     column = db.query(Column_).filter(Column_.id == column_id).first()
@@ -120,7 +136,8 @@ async def update_column(db: db_dependency,
     column = db.query(Column_).filter(Column_.id == column_id).first()
     if column is None:
         raise HTTPException(status_code=404, detail="Column not found")
-    column.task_order_list = column_request.task_order
+    column.key = column_request.key
+    column.task_order = column_request.task_order
     db.add(column)
     db.commit()
 
