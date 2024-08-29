@@ -45,6 +45,7 @@ class TaskRequest(BaseModel):
     start_timestamp: Optional[int] = None
     consume_timestamp: Optional[int] = 0
     markdown_content: str = Field(max_length=200)
+    ts: Optional[int] = None
 
 
 class ColumnRequest(BaseModel):
@@ -85,6 +86,7 @@ async def update_task(db: db_dependency,
     task.start_timestamp = task_request.start_timestamp
     task.consume_timestamp = task_request.consume_timestamp
     task.markdown_content = task_request.markdown_content
+    task.ts = task_request.ts
     db.add(task)
     db.commit()
 
@@ -93,7 +95,6 @@ async def create_task(db: db_dependency, task_request: TaskRequest):
     task = Task(**task_request.model_dump())
     db.add(task)
     db.commit()
-    # return id of new task
     return {"id": task.id}
 
 
