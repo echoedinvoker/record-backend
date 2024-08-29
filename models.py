@@ -11,6 +11,7 @@ class Task(Base):
     name = Column(String)
     estimated_duration = Column(Integer)
     start_timestamp = Column(Integer, nullable=True)
+    ts = Column(Integer, nullable=True)
     consume_timestamp = Column(Integer)
     markdown_content = Column(String)
 
