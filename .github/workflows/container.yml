@@ -25,3 +25,17 @@ jobs:
         context: .
         push: true
         tags: echoedinvoker/record-backend:latest
+
+    - name: Deploy to EC2
+      env:
+        PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+        HOST: ${{ secrets.EC2_HOST }}
+        USER: ${{ secrets.EC2_USERNAME }}
+      run: |
+        echo "Attempting to connect to ${USER}@${HOST}"
+        echo "$PRIVATE_KEY" > private_key && chmod 400 private_key
+        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -vvv -i private_key ${USER}@${HOST} << 'ENDSSH'
+          echo "Successfully connected to the EC2 instance"
+          docker compose up --pull always -d
+        ENDSSH
+
