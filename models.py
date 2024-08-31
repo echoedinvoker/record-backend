@@ -14,6 +14,7 @@ class Task(Base):
     ts = Column(Integer, nullable=True)
     consume_timestamp = Column(Integer)
     markdown_content = Column(String)
+    parent_key = Column(Integer, nullable=True)
 
 
 class Column_(Base):
@@ -22,6 +23,7 @@ class Column_(Base):
     id = Column(Integer, primary_key=True, index=True)
     key = Column(String)
     task_order = Column(Text)
+    ts = Column(Integer, nullable=True)
 
     @validates('task_order')
     def validate_task_ids(self, _, value):
