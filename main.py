@@ -51,6 +51,7 @@ class TaskRequest(BaseModel):
 class ColumnRequest(BaseModel):
     key: str
     task_order: str
+    ts: Optional[int] = None
 
 class ColumnOrderRequest(BaseModel):
     column_order: List[str]
@@ -139,6 +140,8 @@ async def update_column(db: db_dependency,
         raise HTTPException(status_code=404, detail="Column not found")
     column.key = column_request.key
     column.task_order = column_request.task_order
+    if column_request.ts is not None:
+        column.ts = column_request.ts
     db.add(column)
     db.commit()
 
