@@ -3,6 +3,15 @@ from sqlalchemy.orm import validates
 from database import Base
 import json
 
+class Hope(Base):
+    __tablename__ = 'hopes'
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    markdown_content = Column(String)
+    parent_name = Column(Integer, nullable=True) 
+    task_order = Column(Text)
+
 class Task(Base):
     __tablename__ = 'tasks'
 
