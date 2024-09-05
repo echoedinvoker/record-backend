@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 import models
-from models import Column_, ColumnOrder, Task
+from models import Column_, ColumnOrder, Hope, Task
 from database import SessionLocal, engine
 
 app = FastAPI()
@@ -167,4 +167,7 @@ async def update_column_order(db: db_dependency, column_order_request: ColumnOrd
     db.add(column_order)
     db.commit()
 
+@app.get("/hopes")
+async def read_hopes(db: db_dependency):
+    return db.query(Hope).all()
 
