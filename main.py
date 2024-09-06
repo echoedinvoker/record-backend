@@ -47,6 +47,9 @@ class TaskRequest(BaseModel):
     markdown_content: str = Field(max_length=200)
     ts: Optional[int] = None
 
+class HopeRequest(BaseModel):
+    name: str
+    parent_name: Optional[str] = None
 
 class ColumnRequest(BaseModel):
     key: str
@@ -171,3 +174,23 @@ async def update_column_order(db: db_dependency, column_order_request: ColumnOrd
 async def read_hopes(db: db_dependency):
     return db.query(Hope).all()
 
+@app.post("/hopes", status_code=status.HTTP_201_CREATED)
+async def create_hope(db: db_dependency, hope: HopeRequest):
+    newHope = {
+        "name": hope.name,
+        "parent_name": hope.parent_name,
+        "markdown_content": "",
+        "task_order": ""
+    }
+    newHope = (Hope(**newHope))
+    db.add(newHope)
+    db.commit()
+    return {"id": newHope.id}
+
+@app.delete("/hopes/{hope_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_hope(db: db_dependency, hope_id: int = Path(gt=0)):
+    hope = db.query(Hope).filter(Hope.id == hope_id).first()
+    if hope is None:
+        raise HTTPException(status_code=404, detail="Hope not found")
+    db.delete(hope)
+    db.commit()
