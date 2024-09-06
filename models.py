@@ -9,7 +9,7 @@ class Hope(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     markdown_content = Column(String)
-    parent_name = Column(Integer, nullable=True) 
+    parent_name = Column(String, nullable=True) 
     task_order = Column(Text)
 
 class Task(Base):
