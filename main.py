@@ -51,6 +51,12 @@ class HopeRequest(BaseModel):
     name: str
     parent_name: Optional[str] = None
 
+class UpdateHopeRequest(BaseModel):
+    name: str
+    parent_name: Optional[str] = None
+    markdown_content: str
+    task_order: str
+
 class ColumnRequest(BaseModel):
     key: str
     task_order: str
@@ -201,3 +207,18 @@ async def delete_hope(db: db_dependency, hope_id: int = Path(gt=0)):
         raise HTTPException(status_code=404, detail="Hope not found")
     db.delete(hope)
     db.commit()
+
+@app.put("/hopes", status_code=status.HTTP_204_NO_CONTENT)
+async def update_hope_by_name(db: db_dependency, hope_request: UpdateHopeRequest):
+    hope = db.query(Hope).filter(Hope.name == hope_request.name).first()
+    if hope is None:
+        raise HTTPException(status_code=404, detail="Hope not found")
+    if hope_request.parent_name is not None:
+        hope.parent_name = hope_request.parent_name
+    if hope_request.markdown_content is not None:
+        hope.markdown_content = hope_request.markdown_content
+    if hope_request.task_order is not None:
+        hope.task_order = hope_request.task_order
+    db.add(hope)
+    db.commit()
+
