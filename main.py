@@ -170,6 +170,13 @@ async def update_column_order(db: db_dependency, column_order_request: ColumnOrd
     db.add(column_order)
     db.commit()
 
+@app.get("/hopes/name/{name}")
+async def read_hopes_by_name(db: db_dependency, name: str):
+    hope = db.query(Hope).filter(Hope.name == name).first()
+    if hope is None:
+        raise HTTPException(status_code=404, detail="Hope not found")
+    return hope
+
 @app.get("/hopes")
 async def read_hopes(db: db_dependency):
     return db.query(Hope).all()
