@@ -54,8 +54,8 @@ class HopeRequest(BaseModel):
 class UpdateHopeRequest(BaseModel):
     name: str
     parent_name: Optional[str] = None
-    markdown_content: str
-    task_order: str
+    markdown_content: Optional[str] = None
+    task_order: Optional[str] = None
 
 class ColumnRequest(BaseModel):
     key: str
