@@ -187,7 +187,7 @@ async def create_hope(db: db_dependency, hope: HopeRequest):
         "name": hope.name,
         "parent_name": hope.parent_name,
         "markdown_content": "",
-        "task_order": ""
+        "task_order": "[]"
     }
     newHope = (Hope(**newHope))
     db.add(newHope)
