@@ -49,11 +49,13 @@ class TaskRequest(BaseModel):
 
 class HopeRequest(BaseModel):
     name: str
-    parent_name: Optional[str] = None
+    key: str
+    parent_key: Optional[str] = None
 
 class UpdateHopeRequest(BaseModel):
-    name: str
-    parent_name: Optional[str] = None
+    key: str
+    name: Optional[str] = None
+    parent_key: Optional[str] = None
     markdown_content: Optional[str] = None
     task_order: Optional[str] = None
 
@@ -176,9 +178,9 @@ async def update_column_order(db: db_dependency, column_order_request: ColumnOrd
     db.add(column_order)
     db.commit()
 
-@app.get("/hopes/name/{name}")
-async def read_hopes_by_name(db: db_dependency, name: str):
-    hope = db.query(Hope).filter(Hope.name == name).first()
+@app.get("/hopes/key/{key}")
+async def read_hopes_by_key(db: db_dependency, key: str):
+    hope = db.query(Hope).filter(Hope.key == key).first()
     if hope is None:
         raise HTTPException(status_code=404, detail="Hope not found")
     return hope
@@ -191,7 +193,8 @@ async def read_hopes(db: db_dependency):
 async def create_hope(db: db_dependency, hope: HopeRequest):
     newHope = {
         "name": hope.name,
-        "parent_name": hope.parent_name,
+        "key": hope.key,
+        "parent_key": hope.parent_key,
         "markdown_content": "",
         "task_order": "[]"
     }
@@ -208,13 +211,23 @@ async def delete_hope(db: db_dependency, hope_id: int = Path(gt=0)):
     db.delete(hope)
     db.commit()
 
-@app.put("/hopes", status_code=status.HTTP_204_NO_CONTENT)
-async def update_hope_by_name(db: db_dependency, hope_request: UpdateHopeRequest):
-    hope = db.query(Hope).filter(Hope.name == hope_request.name).first()
+@app.delete("/hopes/key/{key}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_hope_by_key(db: db_dependency, key: str):
+    hope = db.query(Hope).filter(Hope.key == key).first()
     if hope is None:
         raise HTTPException(status_code=404, detail="Hope not found")
-    if hope_request.parent_name is not None:
-        hope.parent_name = hope_request.parent_name
+    db.delete(hope)
+    db.commit()
+
+@app.put("/hopes", status_code=status.HTTP_204_NO_CONTENT)
+async def update_hope_by_key(db: db_dependency, hope_request: UpdateHopeRequest):
+    hope = db.query(Hope).filter(Hope.key == hope_request.key).first()
+    if hope is None:
+        raise HTTPException(status_code=404, detail="Hope not found")
+    if hope_request.name is not None:
+        hope.name = hope_request.name
+    if hope_request.parent_key is not None:
+        hope.parent_key = hope_request.parent_key
     if hope_request.markdown_content is not None:
         hope.markdown_content = hope_request.markdown_content
     if hope_request.task_order is not None:

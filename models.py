@@ -7,9 +7,10 @@ class Hope(Base):
     __tablename__ = 'hopes'
 
     id = Column(Integer, primary_key=True, index=True)
+    key = Column(String)
     name = Column(String)
     markdown_content = Column(String)
-    parent_name = Column(String, nullable=True) 
+    parent_key = Column(String, nullable=True) 
     task_order = Column(Text)
 
 class Task(Base):
