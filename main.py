@@ -221,13 +221,14 @@ async def delete_hope_by_key(db: db_dependency, key: str):
 
 @app.put("/hopes", status_code=status.HTTP_204_NO_CONTENT)
 async def update_hope_by_key(db: db_dependency, hope_request: UpdateHopeRequest):
+    print('hope_request', hope_request)
     hope = db.query(Hope).filter(Hope.key == hope_request.key).first()
     if hope is None:
         raise HTTPException(status_code=404, detail="Hope not found")
     if hope_request.name is not None:
         hope.name = hope_request.name
     if hope_request.parent_key is not None:
-        hope.parent_key = hope_request.parent_key
+        hope.parent_key = hope_request.parent_key if hope_request.parent_key != '' else None
     if hope_request.markdown_content is not None:
         hope.markdown_content = hope_request.markdown_content
     if hope_request.task_order is not None:
