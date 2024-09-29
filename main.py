@@ -178,6 +178,14 @@ async def update_column_order(db: db_dependency, column_order_request: ColumnOrd
     db.add(column_order)
     db.commit()
 
+@app.delete("/columns/key/{key}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_column_by_key(db: db_dependency, key: str):
+    column = db.query(Column_).filter(Column_.key == key).first()
+    if column is None:
+        raise HTTPException(status_code=404, detail="Column not found")
+    db.delete(column)
+    db.commit()
+
 @app.get("/hopes/key/{key}")
 async def read_hopes_by_key(db: db_dependency, key: str):
     hope = db.query(Hope).filter(Hope.key == key).first()
