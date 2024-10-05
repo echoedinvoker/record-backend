@@ -86,11 +86,12 @@ class ColumnOrder(Base):
         self.column_order = json.dumps(value)
 
 class Precept(Base):
-     __tablename__ = 'precepts'
+    __tablename__ = 'precepts'
 
-     id = Column(Integer, primary_key=True, index=True)
-     start_end_times = Column(String)
-     base_multiplier = Column(Float, nullable=False)
-     thresholds = Column(String)
-     hope_key = Column(String, nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    key = Column(String)
+    start_end_times = Column(String)
+    base_multiplier = Column(Float, nullable=False)
+    thresholds = Column(String)
+    hope_key = Column(String, nullable=False)
 
