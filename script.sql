@@ -1,6 +1,7 @@
 -- Create the precepts table
 CREATE TABLE IF NOT EXISTS precepts (
     id INTEGER NOT NULL,
+    key VARCHAR NOT NULL,
     start_end_times VARCHAR,
     base_multiplier FLOAT NOT NULL,
     thresholds VARCHAR,
