@@ -1,3 +1,4 @@
+import re
 from typing import List, Union, Dict
 from sqlalchemy import Column, Float, Integer, String, Text
 from sqlalchemy.orm import validates
@@ -97,7 +98,9 @@ class Precept(Base):
 
     @property
     def start_end_times_list(self) -> List[int]:
-        return json.loads(self.start_end_times)
+        if isinstance(self.start_end_times, str):
+            return json.loads(self.start_end_times) if self.start_end_times else []
+        return []
 
     @start_end_times_list.setter
     def start_end_times_list(self, value: List[int]):
@@ -105,7 +108,9 @@ class Precept(Base):
 
     @property
     def thresholds_list(self) -> List[Dict[str, Union[int, float]]]:
-        return json.loads(self.thresholds)
+        if isinstance(self.thresholds, str):
+            return json.loads(self.thresholds) if self.thresholds else []
+        return []
 
     @thresholds_list.setter
     def thresholds_list(self, value: List[Dict[str, Union[int, float]]]):
