@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 import models
-from models import Column_, ColumnOrder, Hope, Task
+from models import Column_, ColumnOrder, Hope, Task, Precept
 from database import SessionLocal, engine
 
 app = FastAPI()
@@ -58,6 +58,13 @@ class UpdateHopeRequest(BaseModel):
     parent_key: Optional[str] = None
     markdown_content: Optional[str] = None
     task_order: Optional[str] = None
+
+class PreceptRequest(BaseModel):
+    key: str
+    start_end_times: str
+    base_multiplier: float
+    thresholds: str
+    hope_key: str
 
 class ColumnRequest(BaseModel):
     key: str
@@ -242,5 +249,43 @@ async def update_hope_by_key(db: db_dependency, hope_request: UpdateHopeRequest)
     if hope_request.task_order is not None:
         hope.task_order = hope_request.task_order
     db.add(hope)
+    db.commit()
+
+@app.get("/precepts")
+async def read_precepts(db: db_dependency):
+    return db.query(Precept).all()
+
+@app.get("/precepts/{precept_id}")
+async def read_precept(db: db_dependency, precept_id: int = Path(gt=0)):
+    precept = db.query(Precept).filter(Precept.id == precept_id).first()
+    if precept is None:
+        raise HTTPException(status_code=404, detail="Precept not found")
+    return precept
+
+@app.post("/precepts", status_code=status.HTTP_201_CREATED)
+async def create_precept(db: db_dependency, precept_request: PreceptRequest):
+    precept = Precept(**precept_request.model_dump())
+    db.add(precept)
+    db.commit()
+    return {"id": precept.id}
+
+@app.put("/precepts/{precept_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def update_precept(db: db_dependency,
+                         precept_request: PreceptRequest,
+                         precept_id: int = Path(gt=0)):
+    precept = db.query(Precept).filter(Precept.id == precept_id).first()
+    if precept is None:
+        raise HTTPException(status_code=404, detail="Precept not found")
+    for key, value in precept_request.model_dump().items():
+        setattr(precept, key, value)
+    db.add(precept)
+    db.commit()
+
+@app.delete("/precepts/{precept_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_precept(db: db_dependency, precept_id: int = Path(gt=0)):
+    precept = db.query(Precept).filter(Precept.id == precept_id).first()
+    if precept is None:
+        raise HTTPException(status_code=404, detail="Precept not found")
+    db.delete(precept)
     db.commit()
 
