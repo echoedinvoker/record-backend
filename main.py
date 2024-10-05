@@ -64,9 +64,9 @@ import json
 
 class PreceptRequest(BaseModel):
     key: str
-    start_end_times: str
+    start_end_times: str = Field(..., example="[1000, 2000]")
     base_multiplier: float
-    thresholds: str
+    thresholds: str = Field(..., example='[{"threshold": 10, "multiplier": 2}, {"threshold": 20, "multiplier": 3}]')
     hope_key: str
 
     @validator('start_end_times')
