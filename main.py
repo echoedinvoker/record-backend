@@ -59,12 +59,35 @@ class UpdateHopeRequest(BaseModel):
     markdown_content: Optional[str] = None
     task_order: Optional[str] = None
 
+from pydantic import BaseModel, Field, validator
+import json
+
 class PreceptRequest(BaseModel):
     key: str
     start_end_times: str
     base_multiplier: float
     thresholds: str
     hope_key: str
+
+    @validator('start_end_times')
+    def validate_start_end_times(cls, v):
+        try:
+            data = json.loads(v)
+            if not isinstance(data, list) or not all(isinstance(x, int) for x in data):
+                raise ValueError("start_end_times must be a JSON string representing a list of integers")
+        except json.JSONDecodeError:
+            raise ValueError("start_end_times must be a valid JSON string")
+        return v
+
+    @validator('thresholds')
+    def validate_thresholds(cls, v):
+        try:
+            data = json.loads(v)
+            if not isinstance(data, list) or not all(isinstance(x, dict) and all(isinstance(y, (int, float)) for y in x.values()) for x in data):
+                raise ValueError("thresholds must be a JSON string representing a list of dictionaries with numeric values")
+        except json.JSONDecodeError:
+            raise ValueError("thresholds must be a valid JSON string")
+        return v
 
 class ColumnRequest(BaseModel):
     key: str
@@ -264,10 +287,14 @@ async def read_precept(db: db_dependency, precept_id: int = Path(gt=0)):
 
 @app.post("/precepts", status_code=status.HTTP_201_CREATED)
 async def create_precept(db: db_dependency, precept_request: PreceptRequest):
-    precept = Precept(**precept_request.model_dump())
-    db.add(precept)
-    db.commit()
-    return {"id": precept.id}
+    try:
+        # The validation will be done automatically by Pydantic
+        precept = Precept(**precept_request.model_dump())
+        db.add(precept)
+        db.commit()
+        return {"id": precept.id}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @app.put("/precepts/{precept_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def update_precept(db: db_dependency,
