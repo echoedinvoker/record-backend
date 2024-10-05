@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Dict
 from sqlalchemy import Column, Float, Integer, String, Text
 from sqlalchemy.orm import validates
 from database import Base
@@ -94,4 +94,20 @@ class Precept(Base):
     base_multiplier = Column(Float, nullable=False)
     thresholds = Column(String)
     hope_key = Column(String, nullable=False)
+
+    @property
+    def start_end_times_list(self) -> List[int]:
+        return json.loads(self.start_end_times)
+
+    @start_end_times_list.setter
+    def start_end_times_list(self, value: List[int]):
+        self.start_end_times = json.dumps(value)
+
+    @property
+    def thresholds_list(self) -> List[Dict[str, Union[int, float]]]:
+        return json.loads(self.thresholds)
+
+    @thresholds_list.setter
+    def thresholds_list(self, value: List[Dict[str, Union[int, float]]]):
+        self.thresholds = json.dumps(value)
 
