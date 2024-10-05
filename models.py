@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Text
+from typing import List, Union
+from sqlalchemy import Column, Float, Integer, String, Text
 from sqlalchemy.orm import validates
 from database import Base
 import json
@@ -42,12 +43,25 @@ class Column_(Base):
         return value
 
     @property
-    def task_order_list(self):
-        return json.loads(self.task_order) if self.task_order else []
+    def task_order_list(self) -> List:
+        if self.task_order is None:
+            return []
+        try:
+            return json.loads(self.task_order) # type: ignore
+        except json.JSONDecodeError:
+            return []
+
 
     @task_order_list.setter
     def task_order_list(self, value):
-        self.task_order = json.dumps(value)
+        if value is None:
+            self.task_order = None
+        else:
+            try:
+                self.task_order = json.dumps(value)
+            except (TypeError, ValueError):
+                # Handle the error appropriately, maybe log it or raise a custom exception
+                self.task_order = '[]'
 
 
 class ColumnOrder(Base):
@@ -56,15 +70,27 @@ class ColumnOrder(Base):
     column_order = Column(Text)
 
     @validates('column_order')
-    def validate_column_ids(self, _, value):
+    def validate_column_ids(self, _, value: Union[List, str]) -> str:
         if isinstance(value, list):
             return json.dumps(value)
         return value
 
     @property
-    def column_order_list(self):
-        return json.loads(self.column_order) if self.column_order else []
+    def column_order_list(self) -> List:
+        if isinstance(self.column_order, str):
+            return json.loads(self.column_order) if self.column_order else []
+        return []
 
     @column_order_list.setter
     def column_order_list(self, value):
         self.column_order = json.dumps(value)
+
+class Precept(Base):
+     __tablename__ = 'precepts'
+
+     id = Column(Integer, primary_key=True, index=True)
+     start_end_times = Column(String)
+     base_multiplier = Column(Float, nullable=False)
+     thresholds = Column(String)
+     hope_key = Column(String, nullable=False)
+
