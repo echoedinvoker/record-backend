@@ -316,3 +316,23 @@ async def delete_precept(db: db_dependency, precept_id: int = Path(gt=0)):
     db.delete(precept)
     db.commit()
 
+@app.delete("/precepts/key/{key}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_precept_by_key(db: db_dependency, key: str):
+    precept = db.query(Precept).filter(Precept.key == key).first()
+    if precept is None:
+        raise HTTPException(status_code=404, detail="Precept not found")
+    db.delete(precept)
+    db.commit()
+
+@app.put("/precepts/key/{key}", status_code=status.HTTP_204_NO_CONTENT)
+async def update_precept_by_key(db: db_dependency,
+                                precept_request: PreceptRequest,
+                                key: str):
+    precept = db.query(Precept).filter(Precept.key == key).first()
+    if precept is None:
+        raise HTTPException(status_code=404, detail="Precept not found")
+    for key, value in precept_request.model_dump().items():
+        setattr(precept, key, value)
+    db.add(precept)
+    db.commit()
+
