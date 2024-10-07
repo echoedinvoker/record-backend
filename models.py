@@ -91,6 +91,7 @@ class Precept(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     key = Column(String)
+    name = Column(String)
     start_end_times = Column(String)
     base_multiplier = Column(Float, nullable=False)
     thresholds = Column(String)
